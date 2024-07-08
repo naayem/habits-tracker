@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Dict, List
 import logging
 import yaml
+import json
 from habits_tracker.utils import load_yaml_as_dict
 
 # Initialize logging
@@ -75,7 +76,7 @@ class HabitTrackerConfig(BaseModel):
         if not all([habits, log_file, penalty_amount, promisor, total_pool, warning_time, punition_time]):
             raise ValueError("Please set all required environment variables.")
 
-        habits_dict = yaml.safe_load(habits)
+        habits_dict = json.loads(habits)
 
         logger.info("Loaded HabitTrackerConfig from environment variables.")
         return cls(
