@@ -1,1 +1,8 @@
 .secrets.yaml
+habits_tracker/__pycache__/**
+habits_tracker/__pycache__/__init__.cpython-312.pyc
+habits_tracker/__pycache__/__init__.cpython-312.pyc
+habits_tracker/__pycache__/config.cpython-312.pyc
+habits_tracker/__pycache__/email_service.cpython-312.pyc
+habits_tracker/__pycache__/form_processor.cpython-312.pyc
+habits_tracker/__pycache__/penalty_checker.cpython-312.pyc
