@@ -2,3 +2,4 @@
 __pycache__/
 
 poetry.lock
+habits_log.json

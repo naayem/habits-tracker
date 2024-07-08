@@ -12,6 +12,7 @@ schedule = "^1.2.2"
 logger = "^1.4"
 pyyaml = "^6.0.1"
 pydantic = "^2.8.2"
+python-crontab = "^3.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
