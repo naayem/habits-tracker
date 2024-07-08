@@ -13,7 +13,7 @@ ENV PATH="${PATH}:/root/.local/bin"
 
 # Copy poetry files and install dependencies
 COPY poetry.lock pyproject.toml ./
-RUN poetry lock
+RUN poetry lock [--no-update]
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi --no-root
 
@@ -36,11 +36,5 @@ COPY . .
 # Expose port
 EXPOSE 8501
 
-# Copy the startup script
-COPY start.sh .
-
-# Ensure the startup script has execute permissions
-RUN chmod +x start.sh
-
-# Run the startup script
-CMD ["./start.sh"]
+# Run cron and Streamlit together
+CMD service cron start && streamlit run app.py
