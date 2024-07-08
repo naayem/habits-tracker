@@ -1,37 +1,31 @@
 import streamlit as st
-import os
+from crontab import CronTab
 
+# Initialize the current user's crontab
+cron = CronTab(user=True)
 
 # Function to list cron jobs
 def list_cron_jobs():
-    try:
-        with open("/etc/cron.d/my-cron-job", "r") as cron_file:
-            return cron_file.readlines()
-    except FileNotFoundError:
-        return []
+    jobs = []
+    for job in cron:
+        jobs.append(str(job))
+    return jobs
 
-
-# Funct
-# ion to add a cron job
+# Function to add a cron job
 def add_cron_job(command, schedule):
-    cron_job = f"{schedule} {command} >> /var/log/cron.log 2>&1"
-    with open("/etc/cron.d/my-cron-job", "a") as cron_file:
-        cron_file.write(cron_job + "\n")
-    os.system("service cron reload")
+    job = cron.new(command=f"{command} >> /var/log/cron.log 2>&1", comment=command)
+    schedule_parts = schedule.split()
+    job.setall(' '.join(schedule_parts[:5]))  # Setting schedule
+    cron.write()
     st.success("Cron job added!")
-
 
 # Function to remove a cron job
 def remove_cron_job(command):
-    with open("/etc/cron.d/my-cron-job", "r") as cron_file:
-        lines = cron_file.readlines()
-    with open("/etc/cron.d/my-cron-job", "w") as cron_file:
-        for line in lines:
-            if command not in line:
-                cron_file.write(line)
-    os.system("service cron reload")
+    jobs = cron.find_command(command)
+    for job in jobs:
+        cron.remove(job)
+    cron.write()
     st.success("Cron job removed!")
-
 
 # Function to read cron log
 def read_cron_log():
@@ -40,7 +34,6 @@ def read_cron_log():
             return log_file.read()
     except FileNotFoundError:
         return "Cron log file not found."
-
 
 # Streamlit UI
 st.title("Cron Job Manager")
@@ -54,8 +47,6 @@ else:
     st.text("No cron jobs found.")
 
 st.header("Add Cron Job")
-st.write("0 9 * * * python /app/task_9am.py")
-
 schedule = st.text_input("Schedule (e.g., '* * * * *' for every minute)")
 command = st.text_input("Command (e.g., 'python /path/to/script.py')")
 if st.button("Add Cron Job"):

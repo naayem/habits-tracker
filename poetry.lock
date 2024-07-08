@@ -952,6 +952,24 @@ toml = "*"
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
 
 [[package]]
+name = "python-crontab"
+version = "3.2.0"
+description = "Python Crontab API"
+optional = false
+python-versions = "*"
+files = [
+    {file = "python_crontab-3.2.0-py3-none-any.whl", hash = "sha256:82cb9b6a312d41ff66fd3caf3eed7115c28c195bfb50711bc2b4b9592feb9fe5"},
+    {file = "python_crontab-3.2.0.tar.gz", hash = "sha256:40067d1dd39ade3460b2ad8557c7651514cd3851deffff61c5c60e1227c5c36b"},
+]
+
+[package.dependencies]
+python-dateutil = "*"
+
+[package.extras]
+cron-description = ["cron-descriptor"]
+cron-schedule = ["croniter"]
+
+[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 description = "Extensions to the standard Python datetime module"
@@ -1411,4 +1429,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ac374c295f8da7094c4a0ab9f712d64ac8b551c2f4fb1522603de6ffc094f36b"
+content-hash = "7594a95c40bde3064b08688f27e90c5ca9125eb50f051b4b3d5a462f56389e35"

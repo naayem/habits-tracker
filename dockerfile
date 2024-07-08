@@ -16,29 +16,21 @@ COPY poetry.lock pyproject.toml ./
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi --no-root
 
-# Install cron
-RUN apt-get update && apt-get install -y cron
+# Install necessary software
+RUN apt-get update && \
+    apt-get -y install cron
+
+# Add crontab file
+COPY crontab /etc/cron.d/crontab
+
+# Give execution rights on the cron job
+RUN chmod 0644 /etc/cron.d/crontab
+
+# Create the log file to be able to run tail
+RUN touch /var/log/cron.log
 
 # Copy the rest of the application
 COPY . .
-
-# Create cron log file
-RUN touch /var/log/cron.log \
-    && chmod 0644 /var/log/cron.log
-
-# Create a directory for custom cron jobs
-RUN mkdir -p /etc/cron.d
-
-# Add the cron job
-
-# Add the cron jobs
-RUN echo "30 9 * * * /usr/local/bin/python /habits_tracker/morning_routine.py >> /var/log/cron.log 2>&1" > /etc/cron.d/my-cron-job \
-    && echo "0 9 * * * /usr/local/bin/python /habits_tracker/morning_warning.py >> /var/log/cron.log 2>&1" >> /etc/cron.d/my-cron-job \
-    && echo "30 13 * * * /usr/local/bin/python /habits_tracker/morning_warning.py >> /var/log/cron.log 2>&1" >> /etc/cron.d/my-cron-job \
-    && chmod 0644 /etc/cron.d/my-cron-job
-
-# Apply cron job
-RUN crontab /etc/cron.d/my-cron-job
 
 # Expose port
 EXPOSE 8501
