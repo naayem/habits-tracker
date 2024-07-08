@@ -1,7 +1,11 @@
 from habits_tracker.config import MailClientConfig, HabitTrackerConfig
+from habits_tracker.utils import load_env_from_yaml
 import streamlit as st
 from habits_tracker.form_processor import FormProcessor
 
+
+# Load environment variables from YAML
+load_env_from_yaml(".secrets.yaml")
 
 # Load configurations
 habit_tracker_config = HabitTrackerConfig.from_env()

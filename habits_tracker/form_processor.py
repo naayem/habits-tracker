@@ -1,13 +1,14 @@
 import streamlit as st
 from datetime import datetime, timedelta
 import json
-from .config import HABITS, LOG_FILE, PENALTY_AMOUNT
+
+from habits_tracker.config import HabitTrackerConfig, MailClientConfig
 from .email_service import EmailService
 
 
 class FormProcessor:
     @staticmethod
-    def process_form(session_state):
+    def process_form(config_habits: HabitTrackerConfig, config_emails:  MailClientConfig):
         date_option = st.selectbox("Choisissez la date à loguer", ["Aujourd'hui", "Hier", "Un autre jour"])
 
         if date_option == "Un autre jour":
@@ -16,10 +17,10 @@ class FormProcessor:
             log_date = datetime.now().date() if date_option == "Aujourd'hui" else datetime.now().date() - timedelta(days=1)
 
         form_data = {}
-        existing_data = FormProcessor.load_existing_data(log_date)
+        existing_data = FormProcessor.load_existing_data(log_date, config_habits.LOG_FILE)
 
         with st.form(key='daily_habit_form'):
-            for habit, habit_type in HABITS.items():
+            for habit, habit_type in config_habits.HABITS.items():
                 if habit in existing_data:
                     default_value = existing_data[habit]
                 else:
@@ -33,15 +34,15 @@ class FormProcessor:
             submitted = st.form_submit_button("Soumettre")
 
             if submitted:
-                FormProcessor.log_data(log_date, form_data)
-                total_penalty = FormProcessor.calculate_penalty(form_data)
-                st.metric(total_penalty)
+                FormProcessor.log_data(log_date, form_data, config_habits.LOG_FILE)
+                total_penalty = FormProcessor.calculate_penalty(form_data, config_habits.PENALTY_AMOUNT)
+                st.metric("Total Penalty", total_penalty)
                 message = FormProcessor.generate_report_message(log_date, form_data, total_penalty)
-                EmailService.send_email("Rapport quotidien soumis", message)
+                EmailService.send_email("Rapport quotidien soumis", message, config_emails)
                 st.success("Rapport soumis avec succès")
 
     @staticmethod
-    def load_existing_data(log_date):
+    def load_existing_data(log_date, LOG_FILE: str):
         try:
             with open(LOG_FILE, "r") as file:
                 data = json.load(file)
@@ -52,7 +53,7 @@ class FormProcessor:
         return data.get(log_date_str, {})
 
     @staticmethod
-    def log_data(log_date, form_data):
+    def log_data(log_date, form_data, LOG_FILE: str):
         try:
             with open(LOG_FILE, "r") as file:
                 data = json.load(file)
@@ -67,7 +68,7 @@ class FormProcessor:
 
     # ! Dummy Penalty
     @staticmethod
-    def calculate_penalty(form_data):
+    def calculate_penalty(form_data, PENALTY_AMOUNT):
         total_penalty = 0
         for habit, value in form_data.items():
             if isinstance(value, bool) and not value:
@@ -80,6 +81,6 @@ class FormProcessor:
     def generate_report_message(log_date, form_data, total_penalty):
         message = f"Rapport quotidien pour le {log_date}:\n"
         for habit, value in form_data.items():
-            message += f"- {habit}: {'Oui ' + value if value else 'Non' if isinstance(value, bool) else value}\n"
+            message += f"- {habit}: {'Oui ' + str(value) if value else 'Non' if isinstance(value, bool) else value}\n"
         message += f"\nPénalité totale: {total_penalty} CHF"
         return message

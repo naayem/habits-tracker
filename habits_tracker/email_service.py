@@ -1,46 +1,48 @@
 from email.mime.multipart import MIMEMultipart
 import smtplib
 from email.mime.text import MIMEText
-from .config import EMAIL_SENDER, EMAIL_PASSWORD, SMTP_SERVER, SMTP_PORT, NOTIFICATION_EMAILS
+from .config import MailClientConfig
+import logging
+
+# Initialize logging
+logger = logging.getLogger(__name__)
 
 
 class EmailService:
-    @staticmethod
-    def send_email(subject, body):
-        for receiver in NOTIFICATION_EMAILS:
+    def send_email(subject, body, config: MailClientConfig):
+        for receiver in config.NOTIFICATION_EMAILS:
             msg = MIMEMultipart()
             msg.attach(MIMEText(body, "plain"))
             msg['Subject'] = subject
-            msg['From'] = EMAIL_SENDER
+            msg['From'] = config.EMAIL_SENDER
             msg['To'] = receiver
 
             try:
-                with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                with smtplib.SMTP(config.SMTP_SERVER, config.SMTP_PORT) as server:
                     server.starttls()
-                    server.login(EMAIL_SENDER, EMAIL_PASSWORD)
-                    server.sendmail(EMAIL_SENDER, receiver, msg.as_string())
-                    print(f"Email sent to {receiver}")
+                    server.login(config.EMAIL_SENDER, config.EMAIL_PASSWORD)
+                    server.sendmail(config.EMAIL_SENDER, receiver, msg.as_string())
+                    logger.info(f"Email sent to {receiver}")
             except smtplib.SMTPException as e:
-                print(f"Failed to send email to {receiver}: {e}")
+                logger.error(f"Failed to send email to {receiver}: {e}")
             except Exception as e:
-                print(f"An error occurred: {e}")
+                logger.error(f"An error occurred: {e}")
 
-    @staticmethod
-    def send_email_promisor(subject, body):
-        promisor_email = NOTIFICATION_EMAILS[0]
+    def send_email_promisor(subject, body, config: MailClientConfig):
+        PROMISOR_EMAIL = config.NOTIFICATION_EMAILS[0]
         msg = MIMEMultipart()
         msg.attach(MIMEText(body, "plain"))
         msg['Subject'] = subject
-        msg['From'] = EMAIL_SENDER
-        msg['To'] = promisor_email
+        msg['From'] = config.EMAIL_SENDER
+        msg['To'] = PROMISOR_EMAIL
 
         try:
-            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            with smtplib.SMTP(config.SMTP_SERVER, config.SMTP_PORT) as server:
                 server.starttls()
-                server.login(EMAIL_SENDER, EMAIL_PASSWORD)
-                server.sendmail(EMAIL_SENDER, promisor_email, msg.as_string())
-                print(f"Email sent to {promisor_email}")
+                server.login(config.EMAIL_SENDER, config.EMAIL_PASSWORD)
+                server.sendmail(config.EMAIL_SENDER, PROMISOR_EMAIL, msg.as_string())
+                logger.info(f"Email sent to {PROMISOR_EMAIL}")
         except smtplib.SMTPException as e:
-            print(f"Failed to send email to {promisor_email}: {e}")
+            logger.error(f"Failed to send email to {PROMISOR_EMAIL}: {e}")
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.error(f"An error occurred: {e}")

@@ -1,63 +1,40 @@
 import os
+from pydantic import BaseModel
+from typing import Dict, List
+import logging
 import yaml
-from typing import List
-import logger
+from habits_tracker.utils import load_yaml_as_dict
 
-# habits_tracker/config.py
-PENALTY_AMOUNT = 50  # CHF par engagement non tenu
-TOTAL_POOL = 1000  # CHF par mois
-# Remplacez par les emails des parties prenantes
+# Initialize logging
+logger = logging.getLogger(__name__)
 
 
-SMTP_SERVER = 'smtp.mail.me.com'
-SMTP_PORT = 587
-
-
-
-LOG_FILE = "habits_log.json"
-
-WARNING_TIME = "07:00"
-PUNITION_TIME = "07:30"
-
-
-def load_yaml_as_dict(config_path: str) -> dict:
-    """Load a configuration file from a given path.
-
-    Args:
-        config_path (str): Path to the configuration file.
-
-    Returns:
-        dict: Configuration file as a dictionary.
-    """
-    with open(config_path) as f:
-        config_dict = yaml.safe_load(f)
-    return config_dict
-
-
-class MailClientConfig:
-    notification_emails: List[str]
-    email_sender: str
-    email_password: str
+class MailClientConfig(BaseModel):
+    NOTIFICATION_EMAILS: List[str]
+    EMAIL_SENDER: str
+    EMAIL_PASSWORD: str
+    SMTP_SERVER: str
+    SMTP_PORT: int
 
     @classmethod
     def from_env(cls):
-        notification_emails = os.environ.get("NOTIFICATION_EMAILS")
+        notification_emails = os.environ.get("NOTIFICATION_EMAILS").split(',')
         email_sender = os.environ.get("EMAIL_SENDER")
         email_password = os.environ.get("EMAIL_PASSWORD")
+        smtp_server = os.environ.get("SMTP_SERVER")
+        smtp_port = int(os.environ.get("SMTP_PORT"))
 
-        if notification_emails is None:
-            raise ValueError("Please set NOTIFICATION_EMAILS environment variables.")
-        if email_sender is None:
-            raise ValueError("Please set EMAIL_SENDER environment variables.")
-        if email_password is None:
-            raise ValueError("Please set EMAIL_PASSWORD environment variables.")
+        if not all([notification_emails, email_sender, email_password, smtp_server, smtp_port]):
+            raise ValueError("Please set all required email environment variables.")
 
-        logger.info("Loaded notification_emails, email_sender, email_password from environment variables.")
-        logger.info(f"NOTIFICATION_EMAILS: {notification_emails}")
-        logger.info(f"EMAIL_SENDER: {email_sender}")
-        logger.info(f"EMAIL_PASSWORD: {email_password}")
-
-        return cls(notification_emails=notification_emails, email_sender=email_sender, email_password=email_password)
+        logger.info("Loaded MailClientConfig from environment variables.")
+        return cls(
+            NOTIFICATION_EMAILS=notification_emails,
+            EMAIL_SENDER=email_sender,
+            EMAIL_PASSWORD=email_password,
+            SMTP_SERVER=smtp_server,
+            SMTP_PORT=smtp_port
+        )
 
     @classmethod
     def from_yaml(cls, yaml_path: str):
@@ -66,35 +43,84 @@ class MailClientConfig:
 
         config_dict = load_yaml_as_dict(yaml_path)
 
-        logger.info(f"Loaded notification_emails, email_sender, email_password from {yaml_path}.")
-        logger.info(f"NOTIFICATION_EMAILS: {config_dict['notification_emails']}")
-        logger.info(f"EMAIL_SENDER: {config_dict['email_sender']}")
-        logger.info(f"EMAIL_PASSWORD: {config_dict['email_password']}")
+        logger.info(f"Loaded MailClientConfig from {yaml_path}.")
+        return cls(
+            NOTIFICATION_EMAILS=config_dict.get('notification_emails'),
+            EMAIL_SENDER=config_dict.get('email_sender'),
+            EMAIL_PASSWORD=config_dict.get('email_password'),
+            SMTP_SERVER=config_dict.get('smtp_server'),
+            SMTP_PORT=config_dict.get('smtp_port')
+        )
 
-        return cls(**config_dict)
+
+class HabitTrackerConfig(BaseModel):
+    HABITS: Dict[str, str]
+    LOG_FILE: str
+    PENALTY_AMOUNT: int
+    PROMISOR: str
+    TOTAL_POOL: int    # CHF per month
+    WARNING_TIME: str
+    PUNITION_TIME: str
+
+    @classmethod
+    def from_env(cls):
+        habits = os.environ.get("HABITS")
+        log_file = os.environ.get("LOG_FILE")
+        penalty_amount = int(os.environ.get("PENALTY_AMOUNT"))
+        promisor = os.environ.get("PROMISOR")
+        total_pool = int(os.environ.get("TOTAL_POOL"))
+        warning_time = os.environ.get("WARNING_TIME")
+        punition_time = os.environ.get("PUNITION_TIME")
+
+        if not all([habits, log_file, penalty_amount, promisor, total_pool, warning_time, punition_time]):
+            raise ValueError("Please set all required environment variables.")
+
+        habits_dict = yaml.safe_load(habits)
+
+        logger.info("Loaded HabitTrackerConfig from environment variables.")
+        return cls(
+            HABITS=habits_dict,
+            LOG_FILE=log_file,
+            PENALTY_AMOUNT=penalty_amount,
+            PROMISOR=promisor,
+            TOTAL_POOL=total_pool,
+            WARNING_TIME=warning_time,
+            PUNITION_TIME=punition_time
+        )
+
+    @classmethod
+    def from_yaml(cls, yaml_path: str):
+        if not os.path.exists(yaml_path):
+            raise ValueError(f"{yaml_path} does not exist.")
+
+        config_dict = load_yaml_as_dict(yaml_path)
+
+        logger.info(f"Loaded HabitTrackerConfig from {yaml_path}.")
+        return cls(
+            HABITS=config_dict.get('habits'),
+            LOG_FILE=config_dict.get('log_file'),
+            PENALTY_AMOUNT=config_dict.get('penalty_amount'),
+            PROMISOR=config_dict.get('promisor'),
+            TOTAL_POOL=config_dict.get('total_pool'),
+            WARNING_TIME=config_dict.get('warning_time'),
+            PUNITION_TIME=config_dict.get('punition_time')
+        )
 
 
-# OPENAI Configs
 class APIKeysConfig(BaseModel):
-    openai: str
+    OPENAI_KEY: str
 
     @classmethod
     def from_env(cls):
         openai_api_key = os.environ.get("OPENAI_API_KEY")
 
         if openai_api_key is None:
-            raise ValueError("Please set OPENAI_API_KEY environment variables.")
+            raise ValueError("Please set OPENAI_API_KEY environment variable.")
 
-        # remove ' and " from the keys
         openai_api_key = openai_api_key.replace("'", "").replace('"', "")
 
-        if openai_api_key is None:
-            raise ValueError("Please set OPENAI_API_KEY environment variables.")
-
         logger.info("Loaded API keys from environment variables.")
-        logger.info(f"OPENAI_API_KEY: {openai_api_key}")
-
-        return cls(openai=openai_api_key)
+        return cls(OPENAI_KEY=openai_api_key)
 
     @classmethod
     def from_yaml(cls, yaml_path: str):
@@ -104,6 +130,4 @@ class APIKeysConfig(BaseModel):
         config_dict = load_yaml_as_dict(yaml_path)
 
         logger.info(f"Loaded API keys from {yaml_path}.")
-        logger.info(f"OPENAI_API_KEY: {config_dict['openai']}")
-
         return cls(**config_dict)
