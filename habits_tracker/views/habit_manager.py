@@ -65,21 +65,14 @@ class HabitsManager:
         self.delete_habit()
 
 
-@st.cache_resource
-def init_connection():
-    url = st.secrets["SUPABASE_URL"]
-    key = st.secrets["SUPABASE_KEY"]
-    return create_client(url, key)
-
-
-supabase_client = init_connection()
-logs_model = SupabaseLogsModel(supabase_client)
-habits_model = SupabaseHabitModel(supabase_client)
-user_model = SupabaseUserModel(supabase_client)
-SA = StreamlitAuthenticator(user_model)
-HM = HabitsManager(habits_model, user_model)
+# logs_model = SupabaseLogsModel(supabase_client)
+# habits_model = SupabaseHabitModel(supabase_client)
+# user_model = SupabaseUserModel(supabase_client)
+# SA = StreamlitAuthenticator(user_model)
+# HM = HabitsManager(habits_model, user_model)
 
 if __name__ == '__main__':
-    SA.authenticator_sidebar()
-    if user_model.get_user_id():
-        HM.habits_manager_page()
+    # SA.authenticator_sidebar()
+    # if user_model.get_user_id():
+    #    HM.habits_manager_page()
+    pass

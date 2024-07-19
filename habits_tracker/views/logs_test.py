@@ -11,22 +11,15 @@ from habits_tracker.views.authenticator import StreamlitAuthenticator
 from habits_tracker.views.habit_manager import HabitsManager
 
 
-@st.cache_resource
-def init_connection():
-    url = st.secrets["SUPABASE_URL"]
-    key = st.secrets["SUPABASE_KEY"]
-    return create_client(url, key)
-
-
-supabase_client = init_connection()
-logs_model = SupabaseLogsModel(supabase_client)
-habits_model = SupabaseHabitModel(supabase_client)
-user_model = SupabaseUserModel(supabase_client)
-st_auth = StreamlitAuthenticator(user_model)
-habits_manager = HabitsManager(habits_model, user_model)
+# supabase_client = init_connection()
+# logs_model = SupabaseLogsModel(supabase_client)
+# habits_model = SupabaseHabitModel(supabase_client)
+# user_model = SupabaseUserModel(supabase_client)
+# st_auth = StreamlitAuthenticator(user_model)
+# habits_manager = HabitsManager(habits_model, user_model)
 
 # Mock user ID for testing
-USER_ID = user_model.get_user_id()
+# USER_ID = user_model.get_user_id()
 
 
 class LogHabitForm():
@@ -36,6 +29,7 @@ class LogHabitForm():
         self.logs_model = logs_model
 
     def log_habit_form(self):
+        USER_ID = self.user_model.get_user_id()
         st.title("Log Habit Form")
         date_option = st.selectbox("Choisissez la date à loguer", ["Aujourd'hui", "Hier", "Un autre jour"])
 
@@ -48,7 +42,7 @@ class LogHabitForm():
         existing_data = self.logs_model.retrieve_logs_for_date(USER_ID, log_date)
 
         with st.form(key='daily_habit_form'):
-            habits = habits_model.get_habits(USER_ID)
+            habits = self.habit_model.get_habits(USER_ID)
             habit_types = {habit["habit_name"]: habit["habit_type"] for habit in habits}
             for habit_name, habit_type in habit_types.items():
                 if habit_name in existing_data:
@@ -73,6 +67,7 @@ class LogHabitForm():
                     st.error(f"Error saving logs: {str(e)}")
 
 
+'''
 def main():
     st.sidebar.title("Test SupabaseLogsModel")
     st_auth.authenticator_sidebar()
@@ -226,3 +221,4 @@ def process_form():
 
 if __name__ == "__main__":
     main()
+'''
