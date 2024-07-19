@@ -8,11 +8,11 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 streamlit = "^1.36.0"
-schedule = "^1.2.2"
 logger = "^1.4"
 pyyaml = "^6.0.1"
-pydantic = "^2.8.2"
-python-crontab = "^3.2.0"
+supabase = "^2.5.1"
+pandas = "^2.2.2"
+numpy = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

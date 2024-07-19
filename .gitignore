@@ -3,3 +3,5 @@ __pycache__/
 
 poetry.lock
 habits_log.json
+secrets.toml
+.secrets

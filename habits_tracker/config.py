@@ -9,6 +9,25 @@ from habits_tracker.utils import load_yaml_as_dict
 logger = logging.getLogger(__name__)
 
 
+class SupabaseConfig(BaseModel):
+    SUPABASE_URL: str
+    SUPABASE_KEY: str
+
+    @classmethod
+    def from_env(cls):
+        supabase_url = os.environ.get("SUPABASE_URL")
+        supabase_key = os.environ.get("SUPABASE_KEY")
+
+        if not all([supabase_url, supabase_key]):
+            raise ValueError("Please set all required email environment variables.")
+
+        logger.info("Loaded MailClientConfig from environment variables.")
+        return cls(
+            SUPABASE_URL=supabase_url,
+            SUPABASE_KEY=supabase_key
+        )
+
+
 class MailClientConfig(BaseModel):
     NOTIFICATION_EMAILS: List[str]
     EMAIL_SENDER: str
