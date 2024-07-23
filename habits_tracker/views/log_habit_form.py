@@ -28,22 +28,23 @@ class LogHabitForm():
 
         with st.form(key='daily_habit_form'):
             habits = self.habit_model.get_habits(USER_ID)
-            habit_types = {habit["habit_name"]: habit["habit_type"] for habit in habits}
-            for habit_name, habit_type in habit_types.items():
+            habit_types = [[habit["habit_id"], habit["habit_name"], habit["habit_type"]] for habit in habits]
+            for habit_id, habit_name, habit_type in habit_types:
                 if habit_name in existing_data:
                     default_value = existing_data.get(habit_name, {'value': False if habit_type == "boolean" else 0})['value']
                 else:
                     default_value = False if habit_type == "boolean" else 0
 
                 if habit_type == "boolean":
-                    form_data[habit_name] = st.checkbox(habit_name, value=default_value)
+                    form_data[habit_id] = st.checkbox(habit_name, value=default_value)
                 elif habit_type == "numeric":
-                    form_data[habit_name] = st.number_input(habit_name, min_value=0, value=int(default_value))
+                    form_data[habit_id] = st.number_input(habit_name, min_value=0, value=int(default_value))
 
             submitted = st.form_submit_button("Soumettre")
             if submitted:
+                st.write(form_data)
                 # Save the form data
-                log_form = {log_date: {habit_name: form_data[habit_name] for habit_name in form_data}}
+                log_form = {log_date: {habit_id: form_data[habit_id] for habit_id in form_data}}
                 try:
                     self.logs_model.create_logs_for_date(log_form)
                     st.success("Logs saved successfully!")

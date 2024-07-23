@@ -38,7 +38,7 @@ class SupabaseLogsModel(LogsModel):
         data = {
             "habit_id": habit_id,
             "log_date": log_date.isoformat(),
-            "log_value": log_value,
+            "log_value": int(log_value),
             "updated_at": datetime.now().isoformat()  # Update the updated_at timestamp
         }
         # Check if the log entry exists

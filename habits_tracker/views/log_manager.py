@@ -39,7 +39,7 @@ def display_habit_logs_table(data):
 
     # Display the DataFrame in Streamlit
     st.title("Habit Logs Table")
-    st.dataframe(df_pivot)
+    st.table(df_pivot)
 
 
 class LogManager():
@@ -58,14 +58,13 @@ class LogManager():
             try:
                 user_logs = self.logs_model.retrieve_user_logs(USER_ID, start_date, end_date)
                 st.write("User logs retrieved successfully!")
-                st.write(user_logs)
                 display_habit_logs_table(user_logs)
             except Exception as e:
                 st.error(f"Error retrieving user logs: {str(e)}")
 
     def test_create_single_log(self):
         st.title("Create Single Log")
-        habits = self.habits_model.get_habits(self.user_model.user.id)
+        habits = self.habit_model.get_habits(self.user_model.get_user_id())
         habit_names = {habit["habit_name"]: habit["habit_id"] for habit in habits}
         selected_habit_name = st.selectbox("Select a habit", list(habit_names.keys()))
         selected_habit_id = habit_names[selected_habit_name]
